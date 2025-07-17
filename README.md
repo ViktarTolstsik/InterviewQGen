@@ -1,6 +1,6 @@
 # InterviewQGen
 
-A modern, fully local interview question generator with a Blazor Server frontend and .NET backend, powered by a local LLM (Ollama). No OpenAI or paid APIs required.
+A modern, fully local interview question generator made entirely via Cursor with a Blazor Server frontend and .NET backend, powered by a local LLM (Ollama). No OpenAI or paid APIs required.
 
 ## Features
 - Generate relevant interview questions based on your job description

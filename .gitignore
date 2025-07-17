@@ -1,0 +1,32 @@
+# .NET build artifacts
+bin/
+obj/
+
+# User-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Visual Studio Code
+.vscode/
+
+# ASP.NET/Blazor publish output
+wwwroot/dist/
+
+# Logs
+*.log
+
+# Secrets (if any)
+appsettings.Development.json
+
+# Others
+*.db
+*.sqlite
+
+# Rider
+.idea/
+
+# OS generated files
+.DS_Store
+Thumbs.db 

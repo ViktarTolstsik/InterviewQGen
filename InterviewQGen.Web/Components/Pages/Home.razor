@@ -1,0 +1,93 @@
+@page "/"
+@rendermode InteractiveServer
+@inject InterviewQGen.App.Services.IQuestionGenerator QuestionGenerator
+
+<div style="max-width:600px;margin:40px auto;padding:2rem;background:#fff;border-radius:16px;box-shadow:0 4px 24px rgba(0,0,0,0.08);font-family:sans-serif;">
+    <h2 style="text-align:center;color:#4B2994;margin-bottom:1.5rem;">Interview Question Generator</h2>
+    <textarea @bind="VacancyDescription" rows="6" style="width:100%;padding:1rem;border-radius:8px;border:1px solid #ccc;font-size:1rem;resize:vertical;box-sizing:border-box;" placeholder="Enter job description..."></textarea>
+    <div style="margin-top:1rem;text-align:right;">
+        <button @onclick="GenerateQuestions" disabled="@(IsLoading)" style="background:#4B2994;color:#fff;padding:0.75rem 2rem;border:none;border-radius:8px;font-size:1rem;cursor:pointer;opacity:@(IsLoading ? 0.6 : 1);transition:opacity 0.2s;">Generate</button>
+    </div>
+
+    @if (IsLoading)
+    {
+        <div style="margin:1.5rem 0;">
+            <div class="progress-bar-outer">
+                <div class="progress-bar-inner"></div>
+            </div>
+            <p style="margin:0.5rem 0 0 0;color:#666;text-align:center;">Generating questions...</p>
+        </div>
+    }
+    @if (Questions?.Count > 0)
+    {
+        <div style="margin-top:2rem;">
+            <h4 style="color:#4B2994;">Generated Questions:</h4>
+            <div style="display:flex;flex-direction:column;gap:1.2rem;">
+                @foreach (var q in Questions.Select(CleanQuestion).Where(IsLikelyQuestion))
+                {
+                    <div style="background:linear-gradient(90deg,#f3e8ff 0%,#ede9fe 100%);border-radius:12px;padding:1.2rem 1.5rem;box-shadow:0 2px 8px rgba(75,41,148,0.06);font-size:1.12rem;color:#2d225a;font-weight:500;">
+                        @q
+                    </div>
+                }
+            </div>
+        </div>
+    }
+    @if (!string.IsNullOrWhiteSpace(ErrorMessage))
+    {
+        <p style="color:#e53935;font-weight:500;margin-top:1rem;">@ErrorMessage</p>
+    }
+</div>
+
+@code {
+    private string VacancyDescription { get; set; } = string.Empty;
+    private List<string> Questions { get; set; } = new();
+    private bool IsLoading = false;
+    private string ErrorMessage = string.Empty;
+
+    private async Task GenerateQuestions()
+    {
+        ErrorMessage = string.Empty;
+        Questions.Clear();
+        if (string.IsNullOrWhiteSpace(VacancyDescription))
+        {
+            ErrorMessage = "Please enter a job description.";
+            return;
+        }
+        IsLoading = true;
+        StateHasChanged();
+        try
+        {
+            var result = await QuestionGenerator.GenerateQuestionsAsync(VacancyDescription);
+            Questions = result.ToList();
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = ex.Message;
+        }
+        finally
+        {
+            IsLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private string CleanQuestion(string input)
+    {
+        if (string.IsNullOrWhiteSpace(input)) return string.Empty;
+        // Remove asterisks, quotes, and leading/trailing symbols
+        var cleaned = input.Replace("*", "").Replace("\"", "").Trim();
+        // Remove leading/trailing punctuation, dashes, numbers, dots, colons, and whitespace
+        cleaned = System.Text.RegularExpressions.Regex.Replace(cleaned, @"^[\-–—\d\.: \s]+", "");
+        cleaned = System.Text.RegularExpressions.Regex.Replace(cleaned, @"[\-–—\d\.: \s]+$", "");
+        return cleaned;
+    }
+
+    private bool IsLikelyQuestion(string input)
+    {
+        if (string.IsNullOrWhiteSpace(input)) return false;
+        input = input.Trim();
+        // Heuristic: ends with ? or starts with common question words
+        string[] starters = new[] { "What", "How", "Why", "Describe", "Tell", "Explain", "Can", "Have", "Do", "Did", "Is", "Are", "Could", "Would", "Please" };
+        return input.EndsWith("?") || starters.Any(s => input.StartsWith(s, StringComparison.OrdinalIgnoreCase));
+    }
+}

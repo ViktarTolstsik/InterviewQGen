@@ -62,5 +62,3 @@ The app will be available at `https://localhost:5001` (or the port shown in the 
 MIT
 
 ---
-
-Made with ❤️ by Рома 
